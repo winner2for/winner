@@ -14,10 +14,8 @@ android {
         versionName "1.0"
     }
 
-    // SIGNATURE AUTOMATIQUE - Plus d'avertissement Play Protect!
     signingConfigs {
         config {
-            // Création automatique du keystore
             storeFile file("autocontrol.keystore")
             storePassword "autocontrol123"
             keyAlias "autocontrol"
@@ -33,6 +31,7 @@ android {
         release {
             signingConfig signingConfigs.config
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -40,15 +39,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    // AJOUTE CES LIGNES
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
 
-// TÂCHE AUTOMATIQUE : Crée le keystore si il n'existe pas
 task createKeystore {
     doLast {
         def keystoreFile = file("autocontrol.keystore")
@@ -58,7 +61,7 @@ task createKeystore {
                 commandLine 'keytool', '-genkey', '-v',
                     '-keystore', 'autocontrol.keystore',
                     '-alias', 'autocontrol',
-                    '-storepass', 'autocontrol123',
+                    '-storepass', 'autocontrol123', 
                     '-keypass', 'autocontrol123',
                     '-keyalg', 'RSA',
                     '-keysize', '2048',
@@ -66,11 +69,8 @@ task createKeystore {
                     '-dname', 'CN=AutoControl, OU=Mobile, O=AutoControl, L=Paris, ST=France, C=FR'
             }
             println "✅ Keystore créé avec succès!"
-        } else {
-            println "✅ Keystore existe déjà"
         }
     }
 }
 
-// Exécute la création du keystore avant la compilation
 preBuild.dependsOn createKeystore
