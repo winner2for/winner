@@ -3,23 +3,74 @@ plugins {
 }
 
 android {
-    compileSdk 31
-    
+    compileSdk 34
+    namespace 'com.autocontrol.app'
+
     defaultConfig {
-        applicationId "com.example.yourapp"
+        applicationId "com.autocontrol.app"
         minSdk 21
-        targetSdk 31
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
-    
+
+    // SIGNATURE AUTOMATIQUE - Plus d'avertissement Play Protect!
+    signingConfigs {
+        config {
+            // Création automatique du keystore
+            storeFile file("autocontrol.keystore")
+            storePassword "autocontrol123"
+            keyAlias "autocontrol"
+            keyPassword "autocontrol123"
+        }
+    }
+
     buildTypes {
         debug {
+            signingConfig signingConfigs.config
             debuggable true
         }
+        release {
+            signingConfig signingConfigs.config
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
-    // Laissez vide ou ajoutez vos dépendances
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
+
+// TÂCHE AUTOMATIQUE : Crée le keystore si il n'existe pas
+task createKeystore {
+    doLast {
+        def keystoreFile = file("autocontrol.keystore")
+        if (!keystoreFile.exists()) {
+            println "🔑 Création du keystore de signature..."
+            exec {
+                commandLine 'keytool', '-genkey', '-v',
+                    '-keystore', 'autocontrol.keystore',
+                    '-alias', 'autocontrol',
+                    '-storepass', 'autocontrol123',
+                    '-keypass', 'autocontrol123',
+                    '-keyalg', 'RSA',
+                    '-keysize', '2048',
+                    '-validity', '10000',
+                    '-dname', 'CN=AutoControl, OU=Mobile, O=AutoControl, L=Paris, ST=France, C=FR'
+            }
+            println "✅ Keystore créé avec succès!"
+        } else {
+            println "✅ Keystore existe déjà"
+        }
+    }
+}
+
+// Exécute la création du keystore avant la compilation
+preBuild.dependsOn createKeystore
